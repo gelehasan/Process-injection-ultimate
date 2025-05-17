@@ -30,4 +30,12 @@ int main() {
 	// The amount of memory space it needs
 	SIZE_T imageSize = ntHeaders->OptionalHeader.SizeOfImage;
 
+		// Creating the process in suspended state
+
+	if(!CreateProcess((LPCWSTR)targetProcessPath, NULL, NULL, NULL, FALSE, CREATE_SUSPENDED, NULL, NULL, &si, &pi)) {
+		cerr << "Could not start notepad in suspended state";
+		return 1;
+	}
+
+	 
 }
