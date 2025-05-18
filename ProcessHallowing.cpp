@@ -51,5 +51,13 @@ int main() {
 		cerr << "[-] Failed to resolve NTQueryINfomation";
 		return 1;
 	};
+	
+	PROCESS_BASIC_INFORMATION pbi;
+	NTSTATUS status = NtQueryInformationProcess(pi.hProcess, ProcessBasicInformation, &pbi, sizeof(ProcessBasicInformation), NULL);
+	
+	if (status !=0) {
+		cerr << "[-] Could not get target process PEB";
+		return 1;
+	}
 
 }
