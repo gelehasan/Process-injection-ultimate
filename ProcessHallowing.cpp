@@ -37,5 +37,19 @@ int main() {
 		return 1;
 	}
 
-	 
+	  
+	// Finding the target PEB before unmaping it
+
+	typedef NTSTATUS(NTAPI* pNtQueryInformationProcess)(
+		HANDLE, PROCESSINFOCLASS, PVOID, ULONG, PULONG
+		);
+ 
+
+	pNtQueryInformationProcess NtQueryInformationProces = (pNtQueryInformationProcess)GetProcAddress(GetModuleHandleA("ntdll.dll"), "NtQueryInformationProcess");
+
+	if (!NtQueryInformationProces) {
+		cerr << "[-] Failed to resolve NTQueryINfomation";
+		return 1;
+	};
+
 }
