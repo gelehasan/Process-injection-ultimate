@@ -59,5 +59,12 @@ int main() {
 		cerr << "[-] Could not get target process PEB";
 		return 1;
 	}
-
+	// Reading Image base address from process environment block
+	LPVOID remoteImageBaseAddress = NULL;
+	ReadProcessMemory(pi.hProcess,(LPCVOID)(pbi.PebBaseAddress + 0x10), &remoteImageBaseAddress, sizeof(PVOID), NULL);
+	
+	if (remoteImageBaseAddress == NULL) {
+		cerr << "Could not locate Image base address";
+		return 1;
+	}
 }
