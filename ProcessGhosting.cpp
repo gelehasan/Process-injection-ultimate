@@ -580,3 +580,46 @@ typedef struct _IO_STATUS_BLOCK
 	ULONG Information;
 } IO_STATUS_BLOCK, * PIO_STATUS_BLOCK;
 
+
+
+
+BYTE* CreateFileINtoMemory(OUT size_t& bufferSize) {
+	//Get File Path
+	//Use CreateFile to create a file
+	// Allocate bu
+	const wchar_t* FilePath = L"C:\\Users\\Task-management.exe";
+	HANDLE created_file = CreateFileW((LPCWSTR)FilePath, GENERIC_READ, 0, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, 0);
+
+	if (created_file == INVALID_HANDLE_VALUE) {
+		cerr << "Couldn't open the specified file";
+		exit(-1);
+	}
+
+	// Allocate
+	bufferSize = GetFileSize(created_file, 0);
+
+	BYTE* allocatedMem = (BYTE*)VirtualAlloc(0, bufferSize, MEM_RESERVE | MEM_COMMIT, PAGE_READWRITE);
+
+	if (allocatedMem == NULL) {
+		cerr << "Could not allocate memory for the file";
+		exit(1);
+	}
+
+	// Read the file into the memory
+	DWORD bytes_written = 0;
+
+	if (!ReadFile(created_file, allocatedMem, bufferSize, &bytes_written, NULL)) {
+		cerr << "Could not read file into memory";
+		exit(1);
+	}
+
+
+	CloseHandle(created_file);
+
+	return allocatedMem;
+
+
+}
+
+
+
