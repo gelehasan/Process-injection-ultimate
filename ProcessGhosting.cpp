@@ -621,5 +621,35 @@ BYTE* CreateFileINtoMemory(OUT size_t& bufferSize) {
 
 }
 
+ULONG_PTR GetEntryAddress(HANDLE processHandle, BYTE* databuffer, PROCESS_BASIC_INFORMATION processinfo) {
+
+	ULONG_PTR entryAddrr;
+	BYTE Image__buffer[0x1000];
+	SIZE_T bytes_read;
+	NTSTATUS ntStatus;
+
+	_RtlImageNTHeader fnRtlImageNtHeader = (_RtlImageNTHeader)GetProcAddress(GetModuleHandleA("ntdll.dll"), "_RtlImageNTHeader");
+	
+	_NtReadVirtualMemory fnNtReadVirtualMemory = (_NtReadVirtualMemory)GetProcAddress(GetModuleHandleA("ntdll.dll"), "NtReadVirtualMemory");
+
+	if (fnNtReadVirtualMemory == NULL || fnRtlImageNtHeader == NULL) {
+		cerr << "Image NT header or read virtual memory function could not be resolved";
+		exit(1);
+	}
+	ntStatus = fnNtReadVirtualMemory(processHandle, processinfo.PebBaseAddress, &Image__buffer, ProcessBasicInformation, &bytes_read);
+
+	if (bytes_read < 0) {
+		cerr << "Could not get base address";
+		exit(1);
+	}
+	entryAddrr =  (fnRtlImageNtHeader(databuffer)->OptionalHeader.AddressOfEntryPoint);
+	entryAddrr += (ULONG_PTR)((PPEB(Image__buffer))->ImageBaseAddress;
+
+	return entryAddrr;
+
+
+
+}
+
 
 
